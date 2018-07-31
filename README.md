@@ -15,13 +15,12 @@ The goal of this repository is to collect instructions how to set up a k8s on di
 ### Author
 **Stefan Walther**
 
-* [twitter](http://twitter.com/waltherstefan)  
-* [github.com/stefanwalther](http://github.com/stefanwalther) 
-* [LinkedIn](https://www.linkedin.com/in/stefanwalther/) 
-
-* [stefanwalther.io](http://stefanwalther.io) - Private blog
-* [qliksite.io](http://qliksite.io) - Qlik Sense / QAP related blog
-* [qlikblog.at](http://qlikblog.at) - QlikView related blog
+- [twitter](http://twitter.com/waltherstefan)
+- [github.com/stefanwalther](http://github.com/stefanwalther)
+- [LinkedIn](https://www.linkedin.com/in/stefanwalther/)
+- [stefanwalther.io](http://stefanwalther.io) - Private blog
+- [qliksite.io](http://qliksite.io) - Qlik Sense / QAP related blog
+- [qlikblog.at](http://qlikblog.at) - QlikView related blog
 
 ### Contributing
 Pull requests and stars are always welcome. For bugs and feature requests, [please create an issue](https://github.com/stefanwalther/k8s-setup/issues). The process for contributing is outlined below:
