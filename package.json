@@ -13,7 +13,10 @@
   "keywords": [
     "kubernetes",
     "kubernetes-cluster",
-    "k8s"
+    "k8s",
+    "k8s-cluster",
+    "bash-script",
+    "terraform"
   ],
   "author": "Stefan Walther <swr.nixda@gmail.com> (http://qliksite.io)",
   "license": "MIT",
