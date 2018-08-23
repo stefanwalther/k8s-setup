@@ -23,7 +23,7 @@ function check_aws_credentials {
   aws sts get-caller-identity
 }
 
-function init {
+function _init {
   echo "$SEP"
   get_args $*
 
@@ -33,7 +33,7 @@ function init {
       echo -e "${red}File does not exist: ${env_file}${nocolor}\n"
       exit 1
     else
-      load_env_from_file ${env_file}
+      _load_env_from_file ${env_file}
     fi
   else
     echo "> No environment-variable file set, so use the ones being available ..."
@@ -61,36 +61,36 @@ function init {
 
 function up {
 
-  init $*
+  _init $*
 
   echo "$SEP"
   echo -e "${green}> Ensure that we have an S3 bucket ...${nocolor}"
-  create_bucket
-  ensure_bucket_versioning
+  _create_bucket
+  _ensure_bucket_versioning
 
   echo "$SEP"
   echo -e "${green}> Create a cluster definition ...${nocolor}"
   echo -e "${light_gray}"
-  create_cluster_definition
+  _create_cluster_definition
   echo -e "${nocolor}"
 
   echo "$SEP"
   echo -e "${green}> Create the cluster ...${nocolor}"
   echo -e "${light_gray}"
-  create
+  _create
   echo -e "${nocolor}"
 
   echo "$SEP"
   echo -e "${green}> Wait for the cluster to be ready ...${nocolor}"
-  wait_cluster_ready
+  _wait_cluster_ready
   echo -e "${nocolor}"
   exit 0
 
   echo "$SEP"
   echo -e "${green}> Deploy the k8s dashboard ...${nocolor}"
   echo -e "${light_gray}"
-  deploy_k8s_dashboard
-  echo_access_dashboard
+  _deploy_k8s_dashboard
+  _echo_access_dashboard
   echo -e "${nocolor}"
 
 }
@@ -98,7 +98,7 @@ function up {
 ## Load environment variables form a file.
 ## Example:
 ##  load_env_from_file "./aws-kops.env"
-function load_env_from_file {
+function _load_env_from_file {
 
   load_from=("$@")
 
@@ -107,7 +107,7 @@ function load_env_from_file {
   export $(grep -v '^#' ${load_from} | xargs)
 }
 
-function create_bucket {
+function _create_bucket {
 
   if [ "$s3_bucket_region" == "us-east-1" ]; then
     aws s3api create-bucket \
@@ -133,24 +133,24 @@ NODE_SIZE="t2.medium"
 EOF
 }
 
-function delete_bucket {
+function _delete_bucket {
   aws s3api delete-bucket \
     --bucket ${s3_bucket_name}
 }
 
-function delete_bucket_versioning {
+function _delete_bucket_versioning {
   aws s3api delete-objects \
     --bucket ${s3_bucket_name} \
     --delete "$(aws s3api list-object-versions --bucket ${s3_bucket_name} | jq '{Objects: [.Versions[] | {Key:.Key, VersionId : .VersionId}], Quiet: false}')"
 }
 
-function ensure_bucket_versioning {
+function _ensure_bucket_versioning {
   aws s3api put-bucket-versioning \
     --bucket ${s3_bucket_name} \
     --versioning-configuration Status=Enabled
 }
 
-function create_cluster_definition {
+function _create_cluster_definition {
   kops create cluster \
     --node-count=${node_count} \
     --node-size=${node_size} \
@@ -159,25 +159,25 @@ function create_cluster_definition {
     --state=${kops_state_store}
 }
 
-function review_cluster {
+function _review_cluster {
   kops edit cluster --name ${kops_cluster_name}
 }
 
-function create {
+function _create {
   kops update cluster \
     --name ${kops_cluster_name} \
     --state ${kops_state_store} \
     --yes
 }
 
-function edit {
+function _edit {
   kops edit cluster \
     --name ${kops_cluster_name}
 }
 
 function destroy {
 
-  init $*
+  _init $*
 
   echo "$SEP"
   echo -e "${green}> Deleting the cluster ...${nocolor}"
@@ -190,20 +190,20 @@ function destroy {
   echo -e "${nocolor}"
 }
 
-function get_cluster {
+function _get_cluster {
   kops get cluster
 }
 
-function validate {
+function _validate {
   kops validate cluster \
     --name ${kops_cluster_name}
 }
 
-function get_nodes {
+function _get_nodes {
   kubectl get nodes #--show-labels
 }
 
-function get_system_components {
+function _get_system_components {
   kubectl -n kube-system get po
 }
 
@@ -219,54 +219,54 @@ function init_helm {
     -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 }
 
-function deploy_k8s_dashboard {
+function _deploy_k8s_dashboard {
   kubectl apply \
     -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
 }
 
-function get_admin_pwd {
+function _get_admin_pwd {
   kops get secrets kube \
     --type secret -oplaintext
 }
 
-function echo_admin_pwd {
-  echo "Admin password: $(get_admin_pwd)"
+function _echo_admin_pwd {
+  echo "Admin password: $(_get_admin_pwd)"
 }
 
-function get_k8s_master {
+function _get_k8s_master {
   api_server=$(kubectl config view --minify | grep server | cut -f 2- -d ":" | tr -d " ")
   echo "${api_server}"
 }
 
-function get_admin_service_token {
+function _get_admin_service_token {
   kops get secrets admin --type secret -oplaintext
 }
 
-function echo_admin_service_token {
-  echo "Admin service token: $(get_admin_service_token)"
+function _echo_admin_service_token {
+  echo "Admin service token: $(_get_admin_service_token)"
 }
 
-function get_cluster_info {
+function _get_cluster_info {
   kubectl cluster-info
 }
 
-function echo_access_dashboard {
+function _echo_access_dashboard {
 
-  echo "The k8s master is available at: $(get_k8s_master)"
+  echo "The k8s master is available at: $(_get_k8s_master)"
   echo ""
-  echo "Access the k8s dashboard at: $(get_k8s_master)/ui"
+  echo "Access the k8s dashboard at: $(_get_k8s_master)/ui"
   echo ""
   echo "Use the following information to get access to the dashboard"
   echo -e "\tUser: admin"
-  echo -e "\tPassword: $(get_admin_pwd)"
+  echo -e "\tPassword: $(_get_admin_pwd)"
   echo ""
   echo "Then use the following token:"
-  echo -e "\t$(echo_admin_service_token)"
+  echo -e "\t$(_echo_admin_service_token)"
   echo ""
 
 }
 
-function wait_cluster_ready {
+function _wait_cluster_ready {
   max_wait=900
 
   echo ""

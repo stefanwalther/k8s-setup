@@ -18,14 +18,17 @@ The following settings need to be set before running the script:
 - `S3_BUCKET_NAME` - Name of the s3 bucket to use.
 - `S3_BUCKET_REGION` - Region to use for the s3 bucket (e.g. `us-west-1`).
 - `KOPS_CLUSTER_NAME` - Name of the k8s cluster (e.g. `my-cluster`).
+- `NODE_COUNT` - ... (e.g. `3`)
+- `NODE_SIZE` - ... (eg. `t2.medium`)
 
 There are two ways of running the script:
 
-Set environment variables explicitely:
+Set environment variables explicitly:
 
 ```
 $ S3_BUCKET_NAME=foo \
   S3_BUCKET_REGION=bar \
+  ... \
   ./aws-kops.sh up
 ```
 
