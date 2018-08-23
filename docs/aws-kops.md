@@ -41,7 +41,11 @@ $ ./aws-kps.sh -e ./aws-kops.env up
 Hint: use `./aws-kops.sh create_env` to create a boilerplate of the .env file.
 
 
-## `up`
+## up
+
+```shell
+$ ./aws-kops.sh up [options]
+```
 
 `up` performs the following tasks:
 
@@ -52,13 +56,31 @@ Hint: use `./aws-kops.sh create_env` to create a boilerplate of the .env file.
 - Deploy the k8s dashboard
 - Echo the required information to access the k8s-dashboard
 
-## `create_env`
+### Options
+
+- `-e` - Environment file (e.g. `./aws-kops.env`)
+
+## create_env
+
+```shell
+$ ./aws-kops.sh create_env
+```
 
 `create_env` performs the following tasks:
 
 - Create a `./aws-kops.env` file with all environment variables needed.
   Note: This file is by default excluded from git as defined in `.gitignore`
 
-## `destroy`
+## destroy
+
+```shell
+$ ./aws-kops.sh up [options]
+```
 
 `destroy` performs the following tasks
+
+- Destroy the environment based on the given environment variables
+
+### Options
+
+- `-e` - Environment file (e.g. `./aws-kops.env`)

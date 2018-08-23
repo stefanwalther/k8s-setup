@@ -8,7 +8,7 @@ kops_cluster_name=
 kops_state_store=
 env_file=
 
-function get_args {
+function _get_args {
   while getopts ":e:" opt; do
     case $opt in
       e) env_file="$OPTARG"
@@ -19,13 +19,13 @@ function get_args {
   done
 }
 
-function check_aws_credentials {
+function _check_aws_credentials {
   aws sts get-caller-identity
 }
 
 function _init {
   echo "$SEP"
-  get_args $*
+  _get_args $*
 
   if [ ! -z "$env_file" ]
   then
@@ -82,6 +82,7 @@ function up {
 
   echo "$SEP"
   echo -e "${green}> Wait for the cluster to be ready ...${nocolor}"
+  echo -e "${light_gray}"
   _wait_cluster_ready
   echo -e "${nocolor}"
   exit 0
@@ -273,9 +274,9 @@ function _wait_cluster_ready {
   echo "> Trying to validate the created cluster ... wait a bit ..."
   echo ""
   while [[ $max_wait -gt 0 ]]; do
-    kops validate cluster --name=${kops_cluster_name} --state=${kops_state_store} 2> /dev/null && break || sleep 10
+    kops validate cluster --name=${kops_cluster_name} --state=${kops_state_store} 2> /dev/null && break || echo "Waiting ..." && sleep 10
     max_wait=$((max_wait - 10))
-    echo "> Waited 10 seconds. Still waiting max. $(show_time ${max_wait}).";
+    echo "Waited 10 seconds. Still waiting max. $(show_time ${max_wait}).";
     echo "---"
   done
 
