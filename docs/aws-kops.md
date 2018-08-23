@@ -2,6 +2,10 @@
 
 ## Prerequisites
 
+- aws-cli
+- kops
+- helm (optional)
+
 ## Running the script
 
 The script located at `./scripts/aws-kops.sh` provides the following commands:
@@ -13,7 +17,7 @@ The script located at `./scripts/aws-kops.sh` provides the following commands:
 
 ## Configuration
 
-The following settings need to be set before running the script:
+The following settings need to be defined before running the script:
 
 - `S3_BUCKET_NAME` - Name of the s3 bucket to use.
 - `S3_BUCKET_REGION` - Region to use for the s3 bucket (e.g. `us-west-1`).
@@ -38,7 +42,7 @@ Using a `.env` file setting the environment variables:
 $ ./aws-kps.sh -e ./aws-kops.env up
 ```
 
-Hint: use `./aws-kops.sh create_env` to create a boilerplate of the .env file.
+Hint: use [`./aws-kops.sh create_env`](#create_env) to create a boilerplate of the .env file.
 
 
 ## up
