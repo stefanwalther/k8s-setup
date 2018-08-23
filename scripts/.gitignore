@@ -1,2 +1,2 @@
-./aws-kops.env
-./aws-kops.test.env
+aws-kops.env
+aws-kops.test.env
