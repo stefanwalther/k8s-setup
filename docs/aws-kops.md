@@ -71,6 +71,10 @@ $ ./aws-kops.sh create_env
 - Create a `./aws-kops.env` file with all environment variables needed.
   Note: This file is by default excluded from git as defined in `.gitignore`
 
+## init_helm
+
+(TBD)
+
 ## destroy
 
 ```shell
