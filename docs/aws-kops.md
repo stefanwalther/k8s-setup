@@ -7,9 +7,9 @@
 The script located at `./scripts/aws-kops.sh` provides the following commands:
 
 - [`./aws-kops.sh up`](#up) - Creates a new k8s cluster.  
-- `./aws-kops.sh create_env` - Creates a sample .env file.`  
-- `./aws-kops.sh init_helm` - Initializes helm.  
-- `./aws-kops.sh destroy` - Destroys the given cluster.  
+- [`./aws-kops.sh create_env`](#create_env) - Creates a sample .env file.`  
+- [`./aws-kops.sh init_helm`](#init_helm) - Initializes helm.  
+- [`./aws-kops.sh destroy`](#destroy) - Destroys the given cluster.  
 
 ## Configuration
 
