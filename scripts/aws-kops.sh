@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o pipefail
+
 source ./shared/shared.sh
 
 s3_bucket_name=
@@ -46,7 +48,7 @@ function _init {
         KOPS_CLUSTER_NAME
         NODE_COUNT
         NODE_SIZE
-      )
+        )
 
   validate_required_env_vars "${vars[@]}"
 
@@ -56,7 +58,8 @@ function _init {
   kops_cluster_name=${KOPS_CLUSTER_NAME}
   kops_state_store=s3://${s3_bucket_name}
   node_count=${NODE_COUNT}
-  node_size="${NODE_SIZE}"
+  node_size=${NODE_SIZE}
+  master_size="m4.large"
 }
 
 function up {
@@ -112,13 +115,13 @@ function _create_bucket {
 
   if [ "$s3_bucket_region" == "us-east-1" ]; then
     aws s3api create-bucket \
-    --bucket ${s3_bucket_name} \
-    --region ${s3_bucket_region} \
-    &> /dev/null
+      --bucket=${s3_bucket_name} \
+      --region=${s3_bucket_region} \
+      &> /dev/null
   else
     aws s3api create-bucket \
-      --bucket ${s3_bucket_name} \
-      --region ${s3_bucket_region} \
+      --bucket=${s3_bucket_name} \
+      --region=${s3_bucket_region} \
       --create-bucket-configuration LocationConstraint=${s3_bucket_region} \
       &> /dev/null
   fi
@@ -136,18 +139,18 @@ EOF
 
 function _delete_bucket {
   aws s3api delete-bucket \
-    --bucket ${s3_bucket_name}
+    --bucket=${s3_bucket_name}
 }
 
 function _delete_bucket_versioning {
   aws s3api delete-objects \
-    --bucket ${s3_bucket_name} \
+    --bucket=${s3_bucket_name} \
     --delete "$(aws s3api list-object-versions --bucket ${s3_bucket_name} | jq '{Objects: [.Versions[] | {Key:.Key, VersionId : .VersionId}], Quiet: false}')"
 }
 
 function _ensure_bucket_versioning {
   aws s3api put-bucket-versioning \
-    --bucket ${s3_bucket_name} \
+    --bucket=${s3_bucket_name} \
     --versioning-configuration Status=Enabled
 }
 
@@ -155,25 +158,27 @@ function _create_cluster_definition {
   kops create cluster \
     --node-count=${node_count} \
     --node-size=${node_size} \
+    --master-size=${master_size} \
     --zones=$(aws ec2 describe-availability-zones --zone-names --query 'AvailabilityZones[0]'.ZoneName) \
     --name=${kops_cluster_name} \
     --state=${kops_state_store}
 }
 
 function _review_cluster {
-  kops edit cluster --name ${kops_cluster_name}
+  kops edit cluster \
+    --name=${kops_cluster_name}
 }
 
 function _create {
   kops update cluster \
-    --name ${kops_cluster_name} \
-    --state ${kops_state_store} \
+    --name=${kops_cluster_name} \
+    --state=${kops_state_store} \
     --yes
 }
 
 function _edit {
   kops edit cluster \
-    --name ${kops_cluster_name}
+    --name=${kops_cluster_name}
 }
 
 function destroy {
@@ -209,12 +214,16 @@ function _get_system_components {
 }
 
 function init_helm {
+
   kubectl create serviceaccount \
     --namespace kube-system tiller
+
   kubectl create clusterrolebinding tiller-cluster-rule \
     --clusterrole=cluster-admin \
     --serviceaccount=kube-system:tiller
+
   helm init
+
   kubectl patch deploy \
     --namespace kube-system tiller-deploy \
     -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
@@ -240,7 +249,8 @@ function _get_k8s_master {
 }
 
 function _get_admin_service_token {
-  kops get secrets admin --type secret -oplaintext
+  kops get secrets admin \
+    --type secret -oplaintext
 }
 
 function _echo_admin_service_token {
@@ -297,11 +307,6 @@ function help {
   echo -e "Further instructions: https://github.com/stefanwalther/k8s-setup"
   echo -e ""
 }
-
-function down {
-  destroy
-}
-
 
 ## *******************************************************************************
 ## External interface to the script to run `./<name>.sh exec <function>`
