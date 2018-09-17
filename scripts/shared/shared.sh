@@ -32,6 +32,18 @@ function load_env {
   source $(pwd)/.env.sh
 }
 
+## Load environment variables form a file.
+## Example:
+##  load_env_from_file "./aws-kops.env"
+function load_env_from_file {
+
+  load_from=("$@")
+
+  echo -e "${green}> Loading environment variables from  '${load_from}'${nocolor}\n"
+
+  export $(grep -v '^#' ${load_from} | xargs)
+}
+
 function validate_required_env_vars {
   req_env_vars=("$@")
 

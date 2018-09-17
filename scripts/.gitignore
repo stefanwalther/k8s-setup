@@ -1,2 +1,4 @@
 aws-kops.env
 aws-kops.test.env
+az-aks.env
+az-aks.test.env

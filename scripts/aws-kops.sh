@@ -33,7 +33,7 @@ function _init {
       echo -e "${red}File does not exist: ${env_file}${nocolor}\n"
       exit 1
     else
-      _load_env_from_file ${env_file}
+      load_env_from_file ${env_file}
     fi
   else
     echo "> No environment-variable file set, so use the ones being available ..."
@@ -94,18 +94,6 @@ function up {
   _echo_access_dashboard
   echo -e "${nocolor}"
 
-}
-
-## Load environment variables form a file.
-## Example:
-##  load_env_from_file "./aws-kops.env"
-function _load_env_from_file {
-
-  load_from=("$@")
-
-  echo -e "${green}> Loading environment variables from  '${load_from}'${nocolor}\n"
-
-  export $(grep -v '^#' ${load_from} | xargs)
 }
 
 function _create_bucket {
