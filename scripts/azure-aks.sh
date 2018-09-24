@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#set -euo pipefail
+set -euo pipefail
 #IFS=$'\n\t'
 
 source ./shared/shared.sh
@@ -9,6 +9,7 @@ env_file=
 cluster_name=
 resource_group_name=
 location=
+storage=
 node_count=2
 kubernetes_version="1.9.1"
 node_vm_size="Standard_DS2_v2"
@@ -23,7 +24,6 @@ function _get_args {
     esac
   done
 }
-
 
 function _init {
 
@@ -45,10 +45,10 @@ function _init {
   # Required variables, set bei either env-vars or the .env file.
   # All other settings are defined by default values.
   vars=(
-        CLUSTER_NAME
-        RESOURCE_GROUP_NAME
-        LOCATION
-      )
+    CLUSTER_NAME
+    RESOURCE_GROUP_NAME
+    LOCATION
+  )
 
   validate_required_env_vars "${vars[@]}"
 
@@ -56,6 +56,7 @@ function _init {
   cluster_name=${CLUSTER_NAME}
   resource_group_name=${RESOURCE_GROUP_NAME}
   location=${LOCATION:-$location}
+  storage=${STORAGE:-$storage}
   node_count=${NODE_COUNT:-$node_count}
   kubernetes_version=${KUBERNETES_VERSION:-$kubernetes_version}
   node_vm_size=${NODE_VM_SIZE:=$node_vm_size}
@@ -73,7 +74,6 @@ function _debug_values {
   echo -e "     - kubernetes_version: $kubernetes_version"
   echo -e "     - node_vm_size: $node_vm_size"
   echo -e ""
-
 }
 
 
@@ -103,7 +103,8 @@ function _az_ensure_aks_services {
   fi
 
   if [ "$skip" == "1" ]; then
-    echo -e "${red}We have an error${nocolor}\n"
+    echo -e ""
+    echo -e "${red}We cannot proceed, the above mentioned services are not in state <Registered> as required.${nocolor}\n"
     exit 1
   fi
   echo -e " "
@@ -147,6 +148,43 @@ function _az_cluster_wait_created {
     --resource-group $resource_group_name \
     --created \
     --interval 1
+
+  echo -e "> The cluster has been created successfully!"
+}
+
+function _az_fetch_credentials {
+  az aks get-credentials \
+    --name $cluster_name \
+    --resource-group $resource_group_name
+}
+
+function _az_storage_add {
+  echo "$SEP"
+  echo -e "${green}> az: Add storage account ...${nocolor}\n"
+  g="MC_""$resource_group_name""_""$cluster_name""_""$location"
+
+  az storage account create \
+    -g $g \
+    -n $storage \
+    --sku Standard_LRS
+}
+
+## *******************************************************************************
+## Delete methods
+## *******************************************************************************
+
+function _az_cl_delete {
+  echo "$SEP"
+  echo "> az: Delete the k8s cluster ..."
+  az aks delete --no-wait --yes --resource-group $resource_group_name --name $cluster_name
+}
+
+function _az_cl_wait_deleted {
+  echo "$SEP"
+  echo "> Waiting for the k8s cluster to be deleted ..."
+  echo "    Note, this typically takes about 10-15 mins or so ..."
+  echo "Status: "
+  az aks wait --name $cluster_name --resource-group $resource_group_name --deleted --interval 1
 }
 
 
@@ -155,7 +193,7 @@ function _az_cluster_wait_created {
 ## *******************************************************************************
 
 function help {
-  echo -e "Help ..."
+  echo -e "Help ... to be added here ... sorry ;-)"
 }
 
 function up {
@@ -167,16 +205,21 @@ function up {
   _az_cluster_create
   _az_cluster_wait_created
 
+  _az_fetch_credentials
+  _az_storage_add
 }
 
 # See here: https://stackify.com/azure-container-service-kubernetes/
-function destroy {
-  echo -e "Destroy ..."
-
-}
-
 function down {
-  destroy
+  _init $*
+  _az_cl_delete
+  _az_cl_wait_deleted
+
+  # Todo: We might have to delete other left-overs, such as:
+  # - storage account (?)
+  # - resource group
+
+  # Todo: down_confirmation
 }
 
 function create_env {
@@ -184,6 +227,7 @@ cat > azure-aks.env << EOF
 CLUSTER_NAME="<name-of-your-cluster>"
 RESOURCE_GROUP_NAME="<name-of-the-resource-group>"
 LOCATION="<azure-location>"
+STORAGE="<azure-storage>"
 EOF
 }
 
