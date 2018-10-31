@@ -12,6 +12,10 @@ Before running the script, you have to login using `az login`
 
 ## Script
 
+```
+$ ./azure-aks.sh up -e
+```
+
 ## Troubleshooting
 
 ### ServicePrincipalNotFound

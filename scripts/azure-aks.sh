@@ -6,6 +6,7 @@ set -euo pipefail
 source ./shared/shared.sh
 
 env_file=
+subscription_id=
 cluster_name=
 resource_group_name=
 location=
@@ -53,6 +54,7 @@ function _init {
   validate_required_env_vars "${vars[@]}"
 
   # Initialize local vars
+  subscription_id=${SUBSCRIPTION_ID}
   cluster_name=${CLUSTER_NAME}
   resource_group_name=${RESOURCE_GROUP_NAME}
   location=${LOCATION:-$location}
@@ -67,6 +69,7 @@ function _debug_values {
   echo "$SEP"
   echo -e "${green}> Using the following values:${nocolor}\n"
 
+  echo -e "     - subscription_id: $subscription_id"
   echo -e "     - cluster_name: $cluster_name"
   echo -e "     - resource_group_name: $resource_group_name"
   echo -e "     - location: $location"
@@ -76,6 +79,19 @@ function _debug_values {
   echo -e ""
 }
 
+function _az_set_subscription {
+
+  echo "$SEP"
+  echo -e "${green}> az: Set subscription Id ...${nocolor}\n"
+
+  if [ "$subscription_id" != "" ]; then
+    echo -e "Set subscription Id to $subscription_id"
+    az account set --subscription ${subscription_id}
+  else
+    echo -e "No need to set the subscription Id"
+  fi
+
+}
 
 function _az_ensure_aks_services {
 
@@ -200,6 +216,7 @@ function up {
 
   _init $*
   _debug_values
+  _az_set_subscription
   _az_ensure_aks_services
   _az_rg_create
   _az_cluster_create
@@ -224,6 +241,7 @@ function down {
 
 function create_env {
 cat > azure-aks.env << EOF
+SUBSCRIPTION_ID=""
 CLUSTER_NAME="<name-of-your-cluster>"
 RESOURCE_GROUP_NAME="<name-of-the-resource-group>"
 LOCATION="<azure-location>"
