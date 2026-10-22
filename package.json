@@ -18,7 +18,7 @@
     "bash-script",
     "terraform"
   ],
-  "author": "Stefan Walther <swr.nixda@gmail.com> (http://qliksite.io)",
+  "author": "Stefan Walther",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/stefanwalther/k8s-setup/issues"
